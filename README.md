@@ -1,116 +1,180 @@
-# 🧠 Mimir
+# 🧠 Mimir - Terminal AI Assistant
 
-**Mimir** is a simple, local, offline AI helper for Linux terminal users.  
-It uses [Ollama](https://ollama.com/) with a **lightweight TinyLlama model** by default.
+> **Your intelligent terminal companion powered by local LLMs**
 
-Mimir can:
-- Answer Linux terminal questions
-- Read your system logs for context (`--logs`)
-- Read your recent shell command history for context (`--history`)
+Mimir is a lightweight, fast terminal troubleshooting assistant that runs entirely locally using Ollama. Get instant shell commands for any task without leaving your terminal.
 
----
 
-## ⚡ Features
 
-✅ Fully local — runs with your local Ollama server  
-✅ Tiny LLM (TinyLlama) for fast offline answers  
-✅ Clear, concise help for Linux beginners  
-✅ Optional flags for extra context (logs, history)  
-✅ Easy to install with one script
+## ✨ Features
 
----
+- 🚀 **Lightning Fast** - Uses TinyLlama by default for instant responses
+- 🔒 **100% Local** - No API keys, no data sharing, complete privacy
+- 🎯 **Command Focused** - Returns pure shell commands, no explanations
+- 📚 **Smart History** - Searches your bash history and previous interactions
+- 🔧 **Configurable** - Multiple model profiles and customizable settings
+- ⭐ **Model Management** - Easy switching between different LLM models
+- 📖 **Man Page Integration** - Quick access to manual pages
 
-## 🗂️ Project Structure
+## 🚀 Quick Start
 
-.
-├── Cargo.toml
-├── src/
-│ └── main.rs
-├── installer.sh
-└── README.md 
+### One-Line Installation
+```bash
+curl -fsSL https://raw.githubusercontent.com/your-username/mimir/main/install.sh | bash
+```
 
----
+### Manual Installation
+```bash
+git clone https://github.com/your-username/mimir.git
+cd mimir
+chmod +x install.sh
+./install.sh
+```
 
-## 🛠️ Install
-
-**1️⃣ Clone the repo**
+## 💡 Usage Examples
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/mimir.git
-cd mimir
-chmod +x installer.sh
-./installer.sh
+# Get shell commands instantly
+mimir "show running processes"
+# Output: ps aux
+
+mimir "find large files"
+# Output: find / -size +100M 2>/dev/null
+
+mimir "check disk space"
+# Output: df -h
+
+# Search your command history
+mimir "docker" --history
+
+# Search previous Mimir interactions
+mimir "processes" --logs
+
+# Get man page summaries
+mimir "grep" --man
 ```
-This will:
 
-    Check if you have Ollama installed and running
+## 🎛️ Model Management
 
-    Install mimir dependencies
+```bash
+# List available models
+mimir --models
 
-    Build the binary
+# Switch models on the fly
+mimir --model "llama3.2:3b"
 
-By default, Mimir uses the TinyLlama model.
-To switch models, change the model name in main.rs:
+# Interactive model selection
+mimir --select-model
 
-"model": "tinyllama"
+# Use model profiles
+mimir --profile powerful
 
-Replace "tinyllama" with any Ollama-supported model you have installed.
+# Reset to TinyLlama default
+mimir --reset-default
+```
 
-# 🧩 Usage
+## ⚙️ Configuration
 
-Run Mimir with or without flags:
+Mimir creates a `mimir_config.json` file for customization:
 
-cargo run -- --logs --history
+```json
+{
+  "model": "tinyllama:latest",
+  "temperature": 0.1,
+  "use_default_model": true,
+  "profiles": {
+    "lightweight": {"model": "tinyllama:latest", "temperature": 0.1},
+    "balanced": {"model": "llama3.2:1b", "temperature": 0.2},
+    "powerful": {"model": "llama3.2:3b", "temperature": 0.1}
+  }
+}
+```
 
-Or, after installing:
+### Available Commands
 
-mimir --logs --history
+| Command | Description |
+|---------|-------------|
+| `mimir "query"` | Get shell command for your query |
+| `--models` | List all available Ollama models |
+| `--model MODEL` | Set specific model to use |
+| `--select-model` | Interactive model selection menu |
+| `--profile PROFILE` | Switch to predefined profile |
+| `--config` | Show current configuration |
+| `--history` | Search bash history with query |
+| `--logs` | Search previous Mimir interactions |
+| `--man` | Show man page summary |
+| `--favorites` | Show favorite models |
+| `--reset-default` | Reset to TinyLlama default |
+| `--temp FLOAT` | Set model temperature (0.0-1.0) |
 
-# How it works:
+## 🏗️ Architecture
 
-    --logs → Mimir scans /var/log/syslog for context
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     Terminal    │───▶│      Mimir      │───▶│     Ollama      │
+│   (Your Query)  │    │   (Processor)   │    │   (Local LLM)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                              │
+                              ▼
+                       ┌─────────────────┐
+                       │  Command Output │
+                       │   (Pure Shell)  │
+                       └─────────────────┘
+```
 
-    --history → Mimir includes ~/.bash_history
+## 🔧 Requirements
 
-    If you skip a flag, that source is skipped — no interactive prompts
+- **Python 3.7+**
+- **Ollama** (automatically installed by installer)
+- **Linux/macOS** (Windows support via WSL)
+- **2GB+ RAM** (for TinyLlama)
 
-    Then, Mimir asks for your question or extra info
+## 📋 Installation Details
 
-    Mimir answers clearly and concisely
-    Example:
+The installer script will:
 
-mimir --logs --history
+1. ✅ Install Ollama if not present
+2. ✅ Pull TinyLlama model (1.1GB)
+3. ✅ Install Python dependencies
+4. ✅ Make `mimir` globally available
+5. ✅ Create default configuration
 
-# or minimal:
+## 🎯 Why Mimir?
 
-mimir
+- **Privacy First**: Everything runs locally, no data leaves your machine
+- **Terminal Native**: Designed for command-line workflows
+- **Lightweight**: Uses efficient models for fast responses
+- **No Subscriptions**: Free and open source forever
+- **Offline Ready**: Works without internet after initial setup
 
-# ✅ Flags
-Flag	What it does
---logs	Read system logs for context
---history	Include recent shell commands
-(none)	Just your question, no extra context
-# 📦 Notes
+## 🤝 Contributing
 
-    Make sure Ollama is installed and running (ollama serve)
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-    TinyLlama model must be pulled: ollama pull tinyllama
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-    You can switch to any other local model by editing main.rs
+## 📝 License
 
-# 💡 Example Questions
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-    How do I check disk space?
+## 🙏 Acknowledgments
 
-    How do I create a new user in Linux?
+- [Ollama](https://ollama.ai/) for making local LLMs accessible
+- [TinyLlama](https://github.com/jzhang38/TinyLlama) for the efficient base model
+- The open source AI community
 
-    Why is my server using 100% CPU?
+## 📞 Support
 
-# 👤 Author
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-username/mimir/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/your-username/mimir/discussions)
+- 📖 **Documentation**: [Wiki](https://github.com/your-username/mimir/wiki)
 
-Made by Deep Narayan Banerjee (@bearcry55)
-🫶 License
+---
 
-MIT — feel free to modify and share!
+**Made with ❤️ for terminal enthusiasts**
 
-
+*"In Norse mythology, Mimir was known for his knowledge and wisdom. Our Mimir brings that same wisdom to your terminal."*
