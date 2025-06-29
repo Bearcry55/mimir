@@ -82,7 +82,6 @@ detect_os() {
 check_requirements() {
     print_step "Checking system requirements..."
     
-    # Check available memory
     if [[ "$OS" == "linux" ]]; then
         MEMORY_KB=$(grep MemTotal /proc/meminfo | awk '{print $2}')
         MEMORY_GB=$((MEMORY_KB / 1024 / 1024))
@@ -100,7 +99,6 @@ check_requirements() {
         fi
     fi
     
-    # Check Python
     if ! command -v python3 &> /dev/null; then
         print_error "Python 3 is required but not installed"
         exit 1
@@ -132,8 +130,7 @@ install_dependencies() {
             ;;
         "macos")
             if ! command -v brew &> /dev/null; then
-                print_error "Homebrew is required on macOS. Please install it first:"
-                echo "https://brew.sh"
+                print_error "Homebrew is required on macOS. Please install it first: https://brew.sh"
                 exit 1
             fi
             brew install curl wget python3
@@ -155,28 +152,22 @@ install_ollama() {
         return 0
     fi
     
-    # Download and install Ollama
     curl -fsSL https://ollama.ai/install.sh | sh
     
-    # Start Ollama service
     if [[ "$OS" == "linux" ]]; then
         if command -v systemctl &> /dev/null; then
             sudo systemctl enable ollama
             sudo systemctl start ollama
         else
-            # For systems without systemd
             nohup ollama serve > /dev/null 2>&1 &
         fi
     elif [[ "$OS" == "macos" ]]; then
-        # Start Ollama in background
         nohup ollama serve > /dev/null 2>&1 &
     fi
     
-    # Wait for Ollama to start
     print_step "Waiting for Ollama to start..."
     sleep 5
     
-    # Check if Ollama is running
     if ! curl -s http://localhost:11434/api/tags > /dev/null; then
         print_error "Failed to start Ollama service"
         exit 1
@@ -189,7 +180,6 @@ install_ollama() {
 install_tinyllama() {
     print_step "Installing TinyLlama model (1.1GB download)..."
     
-    # Check if model already exists
     if ollama list | grep -q "tinyllama:latest"; then
         print_success "TinyLlama already installed"
         return 0
@@ -209,7 +199,6 @@ install_tinyllama() {
 install_python_deps() {
     print_step "Installing Python dependencies..."
     
-    # Create requirements if not exists
     cat > /tmp/mimir_requirements.txt << 'EOF'
 requests>=2.25.0
 argparse
@@ -228,22 +217,17 @@ EOF
 install_mimir() {
     print_step "Installing Mimir..."
     
-    # Create installation directory
     INSTALL_DIR="$HOME/.local/bin"
     mkdir -p "$INSTALL_DIR"
     
-    # Download or copy mimir.py
     if [[ -f "mimir.py" ]]; then
-        # Local installation
         cp mimir.py "$INSTALL_DIR/mimir"
     else
-        # Remote installation
-        curl -fsSL https://raw.githubusercontent.com/your-username/mimir/main/mimir.py -o "$INSTALL_DIR/mimir"
+        curl -fsSL https://raw.githubusercontent.com/Bearcry55/mimir/main/mimir.py -o "$INSTALL_DIR/mimir"
     fi
     
     chmod +x "$INSTALL_DIR/mimir"
     
-    # Add to PATH if not already there
     SHELL_RC=""
     if [[ "$SHELL" == *"bash"* ]]; then
         SHELL_RC="$HOME/.bashrc"
@@ -263,23 +247,19 @@ install_mimir() {
     print_success "Mimir installed to $INSTALL_DIR/mimir"
 }
 
-# Test installation
 test_installation() {
     print_step "Testing installation..."
     
-    # Test Ollama
     if ! curl -s http://localhost:11434/api/tags > /dev/null; then
         print_error "Ollama is not responding"
         return 1
     fi
     
-    # Test TinyLlama
     if ! ollama list | grep -q "tinyllama:latest"; then
         print_error "TinyLlama model not found"
         return 1
     fi
     
-    # Test Mimir
     if [[ -x "$HOME/.local/bin/mimir" ]]; then
         print_success "Installation test passed"
         return 0
@@ -289,7 +269,6 @@ test_installation() {
     fi
 }
 
-# Show completion message
 show_completion() {
     echo -e "${GREEN}"
     echo "╔══════════════════════════════════════════════════════════════╗"
@@ -315,10 +294,8 @@ show_completion() {
     echo -e "${YELLOW}💡 Tip: Add $HOME/.local/bin to your PATH if commands don't work${NC}"
 }
 
-# Main installation function
 main() {
     print_header
-    
     check_root
     detect_os
     check_requirements
@@ -336,5 +313,4 @@ main() {
     fi
 }
 
-# Run main function
 main "$@"
